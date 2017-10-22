@@ -361,21 +361,74 @@ Questao H [CODIGOS]
 ========================================================
 Alguma concentracao continental nas ultimas duas listas (itens (f) e (g))? Explique.
 
-![plot of chunk unnamed-chunk-16](PopulationKey-figure/unnamed-chunk-16-1.png)
+
+```r
+#Merge Continents info related to the Country [Continents is a new dataset imported]
+ContTOP20AgeMeans <- merge(RankTOP20AgeMeans, continents, by.x = "Country", by.y = "Country")
+ContBOTTOM20AgeMeans <- merge(RankBOTTOM20AgeMeans, continents, by.x = "Country", by.y = "Country")
+
+#Mode Function to find the concentration in each option
+findMode <- function(x){ 
+  ta = table(x)
+  tam = max(ta)
+  if (all(ta == tam))
+    mod = NA
+  else
+    if(is.numeric(x))
+      mod = as.numeric(names(ta)[ta == tam])
+  else
+    mod = names(ta)[ta == tam]
+  return(mod)
+}
+```
 
 Questao H [RESULTADO]
 ========================================================
 
-![plot of chunk unnamed-chunk-17](PopulationKey-figure/unnamed-chunk-17-1.png)
+
+```r
+#Related to the TOP 20 Age Means we have the concentration in "Europe"
+findMode(ContTOP20AgeMeans$Continents)
+```
+
+```
+[1] "Europa"
+```
+
+```r
+#Related to the BOTTOM 20 Age Means we have the concentration in "Africa"
+findMode(ContBOTTOM20AgeMeans$Continents)
+```
+
+```
+[1] "Africa"
+```
 
 Questao I [CODIGOS]
 ========================================================
 Mostre , compare e analise a evolucao historica das taxas de mortalidade, entre 1990 e 2014, para o Brasil, Estados Unidos e China.
 
-![plot of chunk unnamed-chunk-18](PopulationKey-figure/unnamed-chunk-18-1.png)
+
+```r
+#Subsetting data related to the Country filter [Brazil - United States - China]
+popDeathRate_by_Country <- subset(pop1990_to_2014[which(pop1990_to_2014$Country.Code == "BRA" | pop1990_to_2014$Country.Code == "USA" | pop1990_to_2014$Country.Code == "CHN"),c("Country.Name","Time","Death.rate..crude..per.1.000.people...SP.DYN.CDRT.IN.")])
+popDeathRate_by_Country <- na.omit(popDeathRate_by_Country)
+names(popDeathRate_by_Country) <- c("Country", "Time", "Death Rate")
+
+#Sets the ggplot Line Chart
+DeathRate <- ggplot(data = popDeathRate_by_Country, aes(x = Time, y = `Death Rate`, group = Country))+
+            geom_line(aes(color=Country)) +
+            geom_point(aes(color=Country))
+```
 
 Questao I [RESULTADO]
 ========================================================
+
+
+```r
+#Shows graphically the data and updates the legend
+DeathRate + theme(legend.position="bottom") + scale_color_manual(values=c("#00cc00", "#ff3300", "#3333cc"))
+```
 
 ![plot of chunk unnamed-chunk-19](PopulationKey-figure/unnamed-chunk-19-1.png)
 
@@ -383,9 +436,27 @@ Questao J [CODIGOS]
 ========================================================
 Mostre , compare e analise a evolucao historica do % de populacao >65 anos, entre 1990 e 2014, para a Franca, Argentina e Africa do Sul.
 
-![plot of chunk unnamed-chunk-20](PopulationKey-figure/unnamed-chunk-20-1.png)
+
+```r
+#Subsetting data related to the Country filter [France - Argentina - South Africa]
+pop65Perc_by_Country <- subset(pop1990_to_2014[which(pop1990_to_2014$Country.Code == "FRA" | pop1990_to_2014$Country.Code == "ARG" | pop1990_to_2014$Country.Code == "ZAF"),c("Country.Name","Time","Population.ages.65.and.above....of.total...SP.POP.65UP.TO.ZS.")])
+pop65Perc_by_Country <- na.omit(pop65Perc_by_Country)
+names(pop65Perc_by_Country) <- c("Country", "Time", "% 65 Years")
+
+#Sets the ggplot Line Chart
+g65Perce <- ggplot(data = pop65Perc_by_Country, aes(x = Time, y = `% 65 Years`, group = Country))+
+           geom_line(aes(color=Country)) +
+           geom_point(aes(color = Country))
+```
+
 Questao J [RESULTADO]
 ========================================================
+
+
+```r
+#Shows graphically the data and updates the legend
+g65Perce + theme(legend.position="bottom") + scale_color_manual(values=c("#3399ff", "#ff3300", "#ffcc00"))
+```
 
 ![plot of chunk unnamed-chunk-21](PopulationKey-figure/unnamed-chunk-21-1.png)
 
