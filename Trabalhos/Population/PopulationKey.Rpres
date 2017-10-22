@@ -1,11 +1,22 @@
-setwd("C:\\Users\\guilo\\Google Drive\\IMPACTA\\AULAS\\ANÁLISE EXPLORATÓRIA DE DADOS\\TRABALHOS\\Population")
-population_key <- read.table("POPULATION_KEY_INDICATORS.csv", header = TRUE, sep = ";")
-continents <- read.table("CONTINENTS.csv", header = TRUE, sep = ";")
-View(continents)
+Population Key - Analise Geral
+========================================================
+author: Guilherme Lourenco - RA: 1700851
+date: BI-15 - Analise Exploratoria de Dados
+autosize: true
 
-#OPTIONS
-#SCIENTIFIC NUMBER
-options(scipen=0)
+<style>
+body {
+    overflow: scroll;
+}
+</style>
+
+Questao A [CODIGOS]
+========================================================
+Lista de paises (top 20) com as maiores taxas medias de natalidade, entre 1990 a 2014
+
+```{r, include=FALSE}
+#Carrega a base
+population_key <- read.table("POPULATION_KEY_INDICATORS.csv", header = TRUE, sep = ";")
 
 #Cleaning NA
 population_key$Population.ages.0.14....of.total...SP.POP.0014.TO.ZS.[population_key$Population.ages.0.14....of.total...SP.POP.0014.TO.ZS. == ""] <- NA
@@ -16,99 +27,207 @@ population_key$Age.dependency.ratio..old....of.working.age.population...SP.POP.D
 population_key$Death.rate..crude..per.1.000.people...SP.DYN.CDRT.IN.[population_key$Death.rate..crude..per.1.000.people...SP.DYN.CDRT.IN. == ""] <- NA
 population_key$Birth.rate..crude..per.1.000.people...SP.DYN.CBRT.IN.[population_key$Birth.rate..crude..per.1.000.people...SP.DYN.CBRT.IN. == ""] <- NA
 
-#SETTING NAMES
-names(continents) <- c("Country", "Continents")
+```
 
-
-#RESPOSTA A: 
+```{r}
 #Subset based on TIME
 pop1990_to_2014 <- subset((population_key[which(population_key$Time >= 1990 & population_key$Time <= 2014),]))
-View(pop1990_to_2014)
 
 #Subset based on Country, Time and Birth Rate
 popCountry_and_BirthRate <- subset(pop1990_to_2014[,c("Country.Name","Time","Birth.rate..crude..per.1.000.people...SP.DYN.CBRT.IN.")],!is.na(pop1990_to_2014$Birth.rate..crude..per.1.000.people...SP.DYN.CBRT.IN.))
-View(popCountry_and_BirthRate)
 
 #Calculate Mean
 popMean_by_Country_and_BirthRate <- aggregate(popCountry_and_BirthRate$Birth.rate..crude..per.1.000.people...SP.DYN.CBRT.IN. ~ popCountry_and_BirthRate$Country.Name, popCountry_and_BirthRate, mean )
 names(popMean_by_Country_and_BirthRate) <- c("Country","Mean")
-View(popMean_by_Country_and_BirthRate)
 
 #Subset the top 20 Medians
 RankTOP20BirthMeans <- popMean_by_Country_and_BirthRate[order(popMean_by_Country_and_BirthRate$Mean, decreasing = TRUE),]
 RankTOP20BirthMeans <- subset(RankTOP20BirthMeans[1:20,])
-View(RankTOP20BirthMeans)
 
-#RESPOSTA B:
+```
+
+Questao A [RESULTADO]
+========================================================
+
+```{r}
+RankTOP20BirthMeans
+```
+
+Questao B [CODIGOS]
+========================================================
+Lista de paises (top 20) com as menores taxas medias de natalidade, entre 1990 a 2014
+
+```{r}
+#Subset the bottom 20 Medians
 RankBOTTOM20BirthMeans <- popMean_by_Country_and_BirthRate[order(popMean_by_Country_and_BirthRate$Mean, decreasing = FALSE),]
 RankBOTTOM20BirthMeans <- subset(RankBOTTOM20BirthMeans[1:20,])
-View(RankBOTTOM20BirthMeans)
 
-#RESPOSTA C: RANKING DE 50 PAÍSES
+```
+
+Questao B [RESULTADO]
+========================================================
+
+```{r}
+RankBOTTOM20BirthMeans
+```
+
+Questao C [CODIGOS]
+========================================================
+Ranking de paises (top 50) com maior populacao, considerando dados de 2014
+
+```{r}
 #Subsets; Population & Order Population
 Rank50paises <- subset((population_key[which(population_key$Time == 2014),c(1,5)]))
 Rank50paises <- Rank50paises[order(Rank50paises$Population..total..SP.POP.TOTL., decreasing = TRUE),]
 Rank50paises <- subset(Rank50paises[1:50,])
+
 #Rename Fields
 names(Rank50paises) <- c("Paises", "Populacao Total")
-View(Rank50paises)
 
-#RESPOSTA D:
+```
+
+Questao C [RESULTADO]
+========================================================
+
+```{r}
+Rank50paises
+```
+
+Questao D [CODIGOS]
+========================================================
+Lista de paises (top 20) com maior variabilidade de populacao, entre 1990 e 2014
+```{r}
+#Subset Country and Variation
 popCountry_Variation <- subset(pop1990_to_2014[,c("Country.Name","Time","Population..total..SP.POP.TOTL.")])
-View(popCountry_Variation)
 
 #Calculate Variation
 popVar_by_Country_and_Population <- aggregate(popCountry_Variation$Population..total..SP.POP.TOTL. ~ popCountry_Variation$Country.Name, popCountry_Variation, var )
 names(popVar_by_Country_and_Population) <- c("Country","Variation")
-View(popVar_by_Country_and_Population)
 
 #Subset the top 20 Medians
 RankTOP20PopVar <- popVar_by_Country_and_Population[order(popVar_by_Country_and_Population$Variation, decreasing = TRUE),]
 RankTOP20PopVar <- subset(RankTOP20PopVar[1:20,])
-View(RankTOP20PopVar)
+```
 
-#RESPOSTA E:
+Questao D [RESULTADO]
+========================================================
+
+```{r}
+RankTOP20PopVar
+```
+
+Questao E [CODIGOS]
+========================================================
+Ha alguma coincidEncia entre os paIses top10 em natalidade e os top10 em variabilidade de populacao, considerando o periodo entre 1990e 2014
+
+```{r, echo=TRUE}
+#Subset top 10 Birth
 top10Birth <- popMean_by_Country_and_BirthRate[order(popMean_by_Country_and_BirthRate$Mean, decreasing = TRUE),]
 top10Birth <- subset(top10Birth[1:10,])
 names(top10Birth) <- c("Country", "MeanBirth Rate")
-View(top10Birth)
 
+
+#Subset top 10 Variability
 top10Variability <- popVar_by_Country_and_Population[order(popVar_by_Country_and_Population$Variation, decreasing = TRUE),]
-top10Variability <- popVar_by_Country_and_Population[1:10,]
-View(top10Variability)
+top10Variability <- top10Variability[1:10,]
 
-plot(top10Birth$`MeanBirth Rate`, top10Variability$Variation)
+```
 
+Questao E [RESULTADO]
+========================================================
 
+```{r}
+plot(top10Birth$`MeanBirth Rate`, top10Variability$Variation,
+    main = "Mean Birth Rate x Population Vaiability [data: Y1990 - Y2014]",
+    xlab = "Mean Birth Rate",
+    ylab = "Population Variability")
 
+```
 
+Questao F [CODIGOS]
+========================================================
+Lista de paises (top 20) com os maiores % medios de populacao acima de 65 anos, considerando o periodo entre 1990 e 2014.
 
-#RESPOSTA F:
+```{r}
 #Subset based on Country, Time and 65 Age
 popCountry_and_65Age <- subset(pop1990_to_2014[,c("Country.Name","Time","Population.ages.65.and.above....of.total...SP.POP.65UP.TO.ZS.")],!is.na(pop1990_to_2014$Population.ages.65.and.above....of.total...SP.POP.65UP.TO.ZS.))
-View(popCountry_and_65Age)
 
 #Calculate Mean
 popMean_by_Country_and_65Age <- aggregate(popCountry_and_65Age$Population.ages.65.and.above....of.total...SP.POP.65UP.TO.ZS. ~ popCountry_and_65Age$Country.Name, popCountry_and_65Age, mean )
 names(popMean_by_Country_and_65Age) <- c("Country","Mean")
-View(popMean_by_Country_and_65Age)
 
 #Subset the top 20 Medians
 RankTOP20AgeMeans <- popMean_by_Country_and_65Age[order(popMean_by_Country_and_65Age$Mean, decreasing = TRUE),]
 RankTOP20AgeMeans <- subset(RankTOP20AgeMeans[1:20,])
-View(RankTOP20AgeMeans)
 
-#RESPOSTA G:
+```
+
+Questao F [RESULTADO]
+========================================================
+
+```{r}
+RankTOP20AgeMeans
+```
+
+Questao G [CODIGOS]
+========================================================
+Lista de paises (top 20) com os menores % medios de populacao acima de 65 anos, considerando o periodo entre 1990 e 2014.
+
+```{r}
+#Subset the bottom 20 Medians
 RankBOTTOM20AgeMeans <- popMean_by_Country_and_65Age[order(popMean_by_Country_and_65Age$Mean, decreasing = FALSE),]
 RankBOTTOM20AgeMeans <- subset(RankBOTTOM20AgeMeans[1:20,])
-View(RankBOTTOM20AgeMeans)
 
-#RESPOSTA H:
+```
 
-names(continents) <- c("Country", "Continents")
+Questao G [RESULTADO]
+========================================================
 
-ContTOP20AgeMeans <- merge(RankTOP20AgeMeans, continents, by.x = "Country", by.y = "Country")
+```{r}
+RankBOTTOM20AgeMeans
+```
 
-ContBOTTOM20AgeMeans <- merge(RankBOTTOM20AgeMeans, continents, by.x = "Country", by.y = "Country")
+Questao H [CODIGOS]
+========================================================
+Alguma concentracao continental nas ultimas duas listas (itens (f) e (g))? Explique.
 
+```{r, echo=FALSE}
+plot(cars)
+```
+
+Questao H [RESULTADO]
+========================================================
+
+```{r, echo=FALSE}
+plot(cars)
+```
+
+Questao I [CODIGOS]
+========================================================
+Mostre , compare e analise a evolucao historica das taxas de mortalidade, entre 1990 e 2014, para o Brasil, Estados Unidos e China.
+
+```{r, echo=FALSE}
+plot(cars)
+```
+
+Questao I [RESULTADO]
+========================================================
+
+```{r, echo=FALSE}
+plot(cars)
+```
+
+Questao J [CODIGOS]
+========================================================
+Mostre , compare e analise a evolucao historica do % de populacao >65 anos, entre 1990 e 2014, para a Franca, Argentina e Africa do Sul.
+
+```{r, echo=FALSE}
+plot(cars)
+```
+Questao J [RESULTADO]
+========================================================
+
+```{r, echo=FALSE}
+plot(cars)
+```
 
